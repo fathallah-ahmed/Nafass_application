@@ -109,6 +109,12 @@ class HomePage extends StatelessWidget {
                               onTap: () => Navigator.pushNamed(context, '/consumption'),
                             ),
                             _HomeCard(
+                              title: 'Journal',
+                              icon: Icons.edit_note_rounded,
+                              accentColor: _brandGreenLilac,
+                              onTap: () => Navigator.pushNamed(context, '/journal'),
+                            ),
+                            _HomeCard(
                               title: 'Calendrier',
                               icon: Icons.calendar_today_rounded,
                               accentColor: _brandGreenLilac,
