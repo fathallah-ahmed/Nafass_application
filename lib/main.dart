@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:nafass_application/features/calendar/logic/journal_provider.dart';
 import 'package:nafass_application/features/calendar/logic/notification_service.dart';
+import 'package:nafass_application/features/challenges/logic/challenges_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
-import 'features/auth/logic/auth_provider.dart';
 import 'routes/app_router.dart';
+import 'package:nafass_application/features/auth/logic/auth_provider.dart';
 
 
 
@@ -33,12 +34,26 @@ class NafassApp extends StatelessWidget {
         ChangeNotifierProvider<JournalProvider>(
           create: (_) => JournalProvider(notificationService: notificationService),
         ),
+        ChangeNotifierProxyProvider<AuthProvider, ChallengesProvider>(
+          create: (context) => ChallengesProvider(
+            authProvider: context.read<AuthProvider>(),
+            notificationService: notificationService,
+          ),
+          update: (context, auth, previous) {
+            final provider = previous ?? ChallengesProvider(
+              authProvider: auth,
+              notificationService: notificationService,
+            );
+            provider.updateAuth(auth);
+            return provider;
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'Nafass',
         debugShowCheckedModeBanner: false,
         theme: _buildLightTheme(),
-        darkTheme: _buildDarkTheme(),
+        darkTheme: _buildDarkTheme(), // Optional: define a dark theme
         themeMode: ThemeMode.system,
         initialRoute: '/login',
         routes: AppRouter.routes,
