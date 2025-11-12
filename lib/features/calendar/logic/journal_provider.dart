@@ -4,40 +4,83 @@ import '../data/models/event.dart';
 import '../data/models/reminder.dart';
 import '../data/repositories/journal_repository.dart';
 import 'notification_service.dart';
+import '../../auth/logic/auth_provider.dart';
 
 class JournalProvider extends ChangeNotifier {
   JournalProvider({
+    required AuthProvider authProvider,
     JournalRepository? repository,
     NotificationService? notificationService,
   })  : _repository = repository ?? JournalRepository(),
-        _notificationService = notificationService ?? NotificationService();
+        _notificationService = notificationService ?? NotificationService(),
+        _authProvider = authProvider,
+        _activeUserId = authProvider.currentUser?.id;
 
   final JournalRepository _repository;
   final NotificationService _notificationService;
+  AuthProvider _authProvider;
 
   List<Reminder> _reminders = <Reminder>[];
   List<Event> _events = <Event>[];
 
   bool _isLoading = false;
+  String? _activeUserId;
 
   List<Reminder> get reminders => List.unmodifiable(_reminders);
   List<Event> get events => List.unmodifiable(_events);
   bool get isLoading => _isLoading;
 
+  void updateAuth(AuthProvider authProvider) {
+    _authProvider = authProvider;
+    final newUserId = _authProvider.currentUser?.id;
+    if (_activeUserId == newUserId) {
+      return;
+    }
+    _activeUserId = newUserId;
+    if (newUserId == null) {
+      _reminders = <Reminder>[];
+      _events = <Event>[];
+      notifyListeners();
+    } else {
+      loadAll();
+    }
+  }
+
+  String _requireUserId() {
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      throw StateError('No authenticated user');
+    }
+    return userId;
+  }
+
   Future<void> loadAll() async {
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      _reminders = <Reminder>[];
+      _events = <Event>[];
+      _isLoading = false;
+      _activeUserId = null;
+      notifyListeners();
+      return;
+    }
+
     _isLoading = true;
     notifyListeners();
 
-    final reminders = await _repository.getReminders();
-    final events = await _repository.getEvents();
+    try {
+      final reminders = await _repository.getReminders(userId: userId);
+      final events = await _repository.getEvents(userId: userId);
 
-    _reminders = reminders;
-    _events = events;
-    _isLoading = false;
+      _reminders = reminders;
+      _events = events;
+      _activeUserId = userId;
 
-    await _synchronizeNotifications();
-
-    notifyListeners();
+      await _synchronizeNotifications();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> _synchronizeNotifications() async {
@@ -61,7 +104,9 @@ class JournalProvider extends ChangeNotifier {
     bool isActive = true,
     int snoozeMinutes = 5,
   }) async {
+    final userId = _requireUserId();
     final reminder = await _repository.createReminder(
+      userId: userId,
       title: title,
       description: description,
       scheduledAt: scheduledAt,
@@ -104,7 +149,8 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<void> deleteReminder(String id) async {
-    await _repository.deleteReminder(id);
+    final userId = _requireUserId();
+    await _repository.deleteReminder(id: id, userId: userId);
     _reminders = _reminders.where((reminder) => reminder.id != id).toList();
     try {
       await _notificationService.cancelReminder(id);
@@ -115,7 +161,12 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<Reminder?> toggleReminder(String id, bool isActive) async {
-    final updated = await _repository.toggleReminder(id, isActive);
+    final userId = _requireUserId();
+    final updated = await _repository.toggleReminder(
+      id,
+      isActive,
+      userId: userId,
+    );
     if (updated == null) {
       return null;
     }
@@ -146,7 +197,12 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<Reminder?> snoozeReminder(String id, int minutes) async {
-    final updated = await _repository.snoozeReminder(id, minutes);
+    final userId = _requireUserId();
+    final updated = await _repository.snoozeReminder(
+      id,
+      minutes,
+      userId: userId,
+    );
     if (updated == null) {
       return null;
     }
@@ -167,17 +223,27 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<List<Reminder>> searchReminders(String keyword) {
-    return _repository.searchReminders(keyword);
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      return Future.value(const <Reminder>[]);
+    }
+    return _repository.searchReminders(keyword, userId: userId);
   }
 
   Future<void> sortRemindersByDate({bool ascending = true}) async {
-    final sorted = await _repository.sortRemindersByDate(ascending: ascending);
+    final userId = _requireUserId();
+    final sorted = await _repository.sortRemindersByDate(
+      userId: userId,
+      ascending: ascending,
+    );
     _reminders = sorted;
     notifyListeners();
   }
 
   Future<void> sortRemindersByActive({bool activeFirst = true}) async {
+    final userId = _requireUserId();
     final sorted = await _repository.sortRemindersByActive(
+      userId: userId,
       activeFirst: activeFirst,
     );
     _reminders = sorted;
@@ -192,7 +258,9 @@ class JournalProvider extends ChangeNotifier {
     String? location,
     bool isAllDay = false,
   }) async {
+    final userId = _requireUserId();
     final event = await _repository.createEvent(
+      userId: userId,
       title: title,
       description: description,
       startAt: startAt,
@@ -222,21 +290,34 @@ class JournalProvider extends ChangeNotifier {
   }
 
   Future<void> deleteEvent(String id) async {
-    await _repository.deleteEvent(id);
+    final userId = _requireUserId();
+    await _repository.deleteEvent(id: id, userId: userId);
     _events = _events.where((event) => event.id != id).toList();
     notifyListeners();
   }
 
   Future<List<Event>> searchEvents(String keyword) {
-    return _repository.searchEvents(keyword);
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      return Future.value(const <Event>[]);
+    }
+    return _repository.searchEvents(keyword, userId: userId);
   }
 
   Future<List<Event>> eventsOnDay(DateTime day) {
-    return _repository.eventsOnDay(day);
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      return Future.value(const <Event>[]);
+    }
+    return _repository.eventsOnDay(day, userId: userId);
   }
 
   Future<List<Event>> eventsInRange(DateTime start, DateTime end) {
-    return _repository.eventsInRange(start, end);
+    final userId = _authProvider.currentUser?.id;
+    if (userId == null) {
+      return Future.value(const <Event>[]);
+    }
+    return _repository.eventsInRange(start, end, userId: userId);
   }
 
   List<Reminder> remindersForDay(DateTime day) {

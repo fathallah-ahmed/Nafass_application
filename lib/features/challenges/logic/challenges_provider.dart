@@ -333,6 +333,7 @@ class ChallengesProvider extends ChangeNotifier {
     }
     final reminder = Reminder(
       id: 'challenge_${challenge.id}',
+      userId: challenge.userId,
       title: 'Défi: ${challenge.title}',
       description: challenge.frequency == ChallengeFrequency.quotidien
           ? 'N\'oubliez pas votre check-in du jour'

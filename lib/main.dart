@@ -31,8 +31,19 @@ class NafassApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-        ChangeNotifierProvider<JournalProvider>(
-          create: (_) => JournalProvider(notificationService: notificationService),
+        ChangeNotifierProxyProvider<AuthProvider, JournalProvider>(
+          create: (context) => JournalProvider(
+            authProvider: context.read<AuthProvider>(),
+            notificationService: notificationService,
+          ),
+          update: (context, auth, previous) {
+            final provider = previous ?? JournalProvider(
+              authProvider: auth,
+              notificationService: notificationService,
+            );
+            provider.updateAuth(auth);
+            return provider;
+          },
         ),
         ChangeNotifierProxyProvider<AuthProvider, ChallengesProvider>(
           create: (context) => ChallengesProvider(

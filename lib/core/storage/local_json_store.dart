@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 /// A simple utility that keeps a JSON file in a writable project directory in
 /// sync with an asset bundled with the app. The asset acts as the initial seed
 /// while subsequent reads/writes operate on the local copy.
@@ -16,16 +17,37 @@ class LocalJsonStore {
   final String assetBasePath;
   final String runtimeDirectory;
 
-  Future<Directory> _ensureDirectory() async {
-    final dataDirectory = Directory(runtimeDirectory);
-    if (!await dataDirectory.exists()) {
-      await dataDirectory.create(recursive: true);
+  Directory? _cachedDirectory;
+
+  Future<Directory> _resolveRuntimeDirectory() async {
+    if (_cachedDirectory != null) {
+      return _cachedDirectory!;
     }
-    return dataDirectory;
+
+
+    Directory directory;
+
+    if (kIsWeb) {
+      directory = Directory(runtimeDirectory);
+    } else {
+      try {
+        final supportDirectory = await getApplicationSupportDirectory();
+        directory = Directory(p.join(supportDirectory.path, runtimeDirectory));
+      } on MissingPluginException {
+        directory = Directory(runtimeDirectory);
+      }
+    }
+
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+
+    _cachedDirectory = directory;
+    return directory;
   }
 
   Future<File> _resolveFile(String fileName) async {
-    final directory = await _ensureDirectory();
+    final directory = await _resolveRuntimeDirectory();
     final file = File('${directory.path}/$fileName');
 
     if (!await file.exists()) {

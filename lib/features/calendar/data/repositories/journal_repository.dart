@@ -41,13 +41,22 @@ class JournalRepository {
     );
   }
 
-  Future<List<Reminder>> getReminders() async {
-    final reminders = await _readReminders();
-    reminders.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+  List<Reminder> _remindersForUser(List<Reminder> reminders, String userId) {
+    return reminders.where((reminder) => reminder.userId == userId).toList();
+  }
+
+  List<Event> _eventsForUser(List<Event> events, String userId) {
+    return events.where((event) => event.userId == userId).toList();
+  }
+
+  Future<List<Reminder>> getReminders({required String userId}) async {
+    final reminders = _remindersForUser(await _readReminders(), userId)
+      ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
     return reminders;
   }
 
   Future<Reminder> createReminder({
+    required String userId,
     required String title,
     String? description,
     required DateTime scheduledAt,
@@ -58,6 +67,7 @@ class JournalRepository {
     final now = DateTime.now();
     final reminder = Reminder(
       id: _uuid.v4(),
+      userId: userId,
       title: title,
       description: description,
       scheduledAt: scheduledAt,
@@ -76,6 +86,10 @@ class JournalRepository {
     if (index == -1) {
       throw StateError('Reminder not found: ${reminder.id}');
     }
+    final existing = reminders[index];
+    if (existing.userId != reminder.userId) {
+      throw StateError('Reminder does not belong to the current user.');
+    }
     final updated = reminder.copyWith(updatedAt: DateTime.now());
     final updatedList = [...reminders];
     updatedList[index] = updated;
@@ -83,15 +97,25 @@ class JournalRepository {
     return updated;
   }
 
-  Future<void> deleteReminder(String id) async {
+  Future<void> deleteReminder({
+    required String id,
+    required String userId,
+  }) async {
     final reminders = await _readReminders();
-    final updated = reminders.where((reminder) => reminder.id != id).toList();
+    final updated = reminders
+        .where((reminder) => reminder.id != id || reminder.userId != userId)
+        .toList();
     await _writeReminders(updated);
   }
 
-  Future<Reminder?> toggleReminder(String id, bool isActive) async {
+  Future<Reminder?> toggleReminder(
+      String id,
+      bool isActive, {
+        required String userId,
+      }) async {
     final reminders = await _readReminders();
-    final index = reminders.indexWhere((reminder) => reminder.id == id);
+    final index = reminders
+        .indexWhere((reminder) => reminder.id == id && reminder.userId == userId);
     if (index == -1) {
       return null;
     }
@@ -103,9 +127,14 @@ class JournalRepository {
     return updatedReminder;
   }
 
-  Future<Reminder?> snoozeReminder(String id, int minutes) async {
+  Future<Reminder?> snoozeReminder(
+      String id,
+      int minutes, {
+        required String userId,
+      }) async {
     final reminders = await _readReminders();
-    final index = reminders.indexWhere((reminder) => reminder.id == id);
+    final index = reminders
+        .indexWhere((reminder) => reminder.id == id && reminder.userId == userId);
     if (index == -1) {
       return null;
     }
@@ -120,12 +149,15 @@ class JournalRepository {
     return snoozed;
   }
 
-  Future<List<Reminder>> searchReminders(String keyword) async {
+  Future<List<Reminder>> searchReminders(
+      String keyword, {
+        required String userId,
+      }) async {
     final lowerKeyword = keyword.toLowerCase().trim();
     if (lowerKeyword.isEmpty) {
-      return getReminders();
+      return getReminders(userId: userId);
     }
-    final reminders = await _readReminders();
+    final reminders = _remindersForUser(await _readReminders(), userId);
     final filtered = reminders.where((reminder) {
       final title = reminder.title.toLowerCase();
       final description = reminder.description?.toLowerCase() ?? '';
@@ -135,8 +167,11 @@ class JournalRepository {
     return filtered;
   }
 
-  Future<List<Reminder>> sortRemindersByDate({bool ascending = true}) async {
-    final reminders = await _readReminders();
+  Future<List<Reminder>> sortRemindersByDate({
+    required String userId,
+    bool ascending = true,
+  }) async {
+    final reminders = _remindersForUser(await _readReminders(), userId);
     final sorted = [...reminders]
       ..sort((a, b) => ascending
           ? a.scheduledAt.compareTo(b.scheduledAt)
@@ -145,9 +180,10 @@ class JournalRepository {
   }
 
   Future<List<Reminder>> sortRemindersByActive({
+    required String userId,
     bool activeFirst = true,
   }) async {
-    final reminders = await _readReminders();
+    final reminders = _remindersForUser(await _readReminders(), userId);
     final sorted = [...reminders]
       ..sort((a, b) {
         if (a.isActive == b.isActive) {
@@ -161,13 +197,14 @@ class JournalRepository {
     return sorted;
   }
 
-  Future<List<Event>> getEvents() async {
-    final events = await _readEvents();
-    events.sort((a, b) => a.startAt.compareTo(b.startAt));
+  Future<List<Event>> getEvents({required String userId}) async {
+    final events = _eventsForUser(await _readEvents(), userId)
+      ..sort((a, b) => a.startAt.compareTo(b.startAt));
     return events;
   }
 
   Future<Event> createEvent({
+    required String userId,
     required String title,
     String? description,
     required DateTime startAt,
@@ -179,6 +216,7 @@ class JournalRepository {
     final now = DateTime.now();
     final event = Event(
       id: _uuid.v4(),
+      userId: userId,
       title: title,
       description: description,
       startAt: startAt,
@@ -198,6 +236,10 @@ class JournalRepository {
     if (index == -1) {
       throw StateError('Event not found: ${event.id}');
     }
+    final existing = events[index];
+    if (existing.userId != event.userId) {
+      throw StateError('Event does not belong to the current user.');
+    }
     final updated = event.copyWith(updatedAt: DateTime.now());
     final updatedList = [...events];
     updatedList[index] = updated;
@@ -205,18 +247,26 @@ class JournalRepository {
     return updated;
   }
 
-  Future<void> deleteEvent(String id) async {
+  Future<void> deleteEvent({
+    required String id,
+    required String userId,
+  }) async {
     final events = await _readEvents();
-    final updated = events.where((event) => event.id != id).toList();
+    final updated = events
+        .where((event) => event.id != id || event.userId != userId)
+        .toList();
     await _writeEvents(updated);
   }
 
-  Future<List<Event>> searchEvents(String keyword) async {
+  Future<List<Event>> searchEvents(
+      String keyword, {
+        required String userId,
+      }) async {
     final lowerKeyword = keyword.toLowerCase().trim();
     if (lowerKeyword.isEmpty) {
-      return getEvents();
+      return getEvents(userId: userId);
     }
-    final events = await _readEvents();
+    final events = _eventsForUser(await _readEvents(), userId);
     final filtered = events.where((event) {
       final title = event.title.toLowerCase();
       final description = event.description?.toLowerCase() ?? '';
@@ -229,8 +279,11 @@ class JournalRepository {
     return filtered;
   }
 
-  Future<List<Event>> eventsOnDay(DateTime day) async {
-    final events = await _readEvents();
+  Future<List<Event>> eventsOnDay(
+      DateTime day, {
+        required String userId,
+      }) async {
+    final events = _eventsForUser(await _readEvents(), userId);
     final startOfDay = DateTime(day.year, day.month, day.day);
     final endOfDay = startOfDay.add(const Duration(days: 1));
 
@@ -245,8 +298,12 @@ class JournalRepository {
     return filtered;
   }
 
-  Future<List<Event>> eventsInRange(DateTime start, DateTime end) async {
-    final events = await _readEvents();
+  Future<List<Event>> eventsInRange(
+      DateTime start,
+      DateTime end, {
+        required String userId,
+      }) async {
+    final events = _eventsForUser(await _readEvents(), userId);
     final normalizedStart = start.isBefore(end) ? start : end;
     final normalizedEnd = end.isAfter(start) ? end : start;
 

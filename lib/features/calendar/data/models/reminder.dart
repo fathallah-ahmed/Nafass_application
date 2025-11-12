@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 class Reminder {
   const Reminder({
     required this.id,
+    required this.userId,
     required this.title,
     this.description,
     required this.scheduledAt,
@@ -14,6 +15,7 @@ class Reminder {
   });
 
   final String id;
+  final String userId;
   final String title;
   final String? description;
   final DateTime scheduledAt;
@@ -24,6 +26,7 @@ class Reminder {
 
   Reminder copyWith({
     String? id,
+    String? userId,
     String? title,
     String? description,
     DateTime? scheduledAt,
@@ -34,6 +37,7 @@ class Reminder {
   }) {
     return Reminder(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title ?? this.title,
       description: description ?? this.description,
       scheduledAt: scheduledAt ?? this.scheduledAt,
@@ -47,6 +51,7 @@ class Reminder {
   factory Reminder.fromJson(Map<String, dynamic> json) {
     return Reminder(
       id: json['id'] as String,
+      userId: json['userId'] as String? ?? '',
       title: json['title'] as String,
       description: json['description'] as String?,
       scheduledAt: DateTime.parse(json['scheduledAt'] as String),
@@ -60,6 +65,7 @@ class Reminder {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'id': id,
+      'userId': userId,
       'title': title,
       'description': description,
       'scheduledAt': scheduledAt.toIso8601String(),
