@@ -1,4 +1,4 @@
-package esprit.tn.nafass_application
+package com.example.nafass_application
 
 import io.flutter.embedding.android.FlutterActivity
 

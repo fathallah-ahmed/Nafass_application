@@ -39,7 +39,7 @@ dependencies:
   uuid: ^4.5.2
   provider: ^6.1.5+1
   intl: ^0.20.2
-  flutter_timezone: ^1.0.7
+  flutter_timezone: ^3.0.1
   flutter_local_notifications: ^18.0.1
   timezone: ^0.9.3
   table_calendar: ^3.1.2
