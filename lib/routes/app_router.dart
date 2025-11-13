@@ -8,6 +8,9 @@ import '../features/auth/ui/pages/login_page.dart';
 import '../features/auth/ui/pages/register_page.dart';
 import 'package:nafass_application/features/medicament/ui/pages/medicament_list_page.dart';
 
+import '../features/profile/ui/pages/profile_creation_page.dart';
+import '../features/profile/ui/pages/profile_page.dart';
+
 class AppRouter {
   const AppRouter._();
 
@@ -20,5 +23,7 @@ class AppRouter {
     '/challenges/new': (context) => const ChallengeFormPage(),
     '/challenges/details': (context) => const ChallengeDetailsPage(),
     '/meds': (context) => const MedicamentListPage(),
+    '/profile': (context)  => const ProfilePage(),
+    '/create-profile': (context) => const ProfileCreationPage(),
   };
 }

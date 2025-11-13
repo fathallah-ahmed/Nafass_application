@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'features/profile/logic/profile_provider.dart';
 import 'routes/app_router.dart';
 import 'package:nafass_application/features/auth/logic/auth_provider.dart';
 
@@ -33,6 +34,7 @@ class NafassApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
+        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
         ChangeNotifierProxyProvider<AuthProvider, JournalProvider>(
           create: (context) => JournalProvider(
             authProvider: context.read<AuthProvider>(),
