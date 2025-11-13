@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nafass_application/features/calendar/logic/journal_provider.dart';
 import 'package:nafass_application/features/calendar/logic/notification_service.dart';
 import 'package:nafass_application/features/challenges/logic/challenges_provider.dart';
+import 'package:nafass_application/features/medicament/logic/medicament_provider.dart';
+import 'package:nafass_application/features/medicament/logic/prises_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -59,6 +61,14 @@ class NafassApp extends StatelessWidget {
             return provider;
           },
         ),
+        ChangeNotifierProvider<PrisesProvider>(
+          create: (_) => PrisesProvider()..load(),
+        ),
+        ChangeNotifierProvider<MedicamentProvider>(
+          create: (context) => MedicamentProvider(
+            prisesProvider: context.read<PrisesProvider>(),
+          )..load(),
+        ),
       ],
       child: MaterialApp(
         title: 'Nafass',
@@ -76,7 +86,6 @@ class NafassApp extends StatelessWidget {
       ),
     );
   }
-
   ThemeData _buildLightTheme() {
     const background = Color(0xFFFFFFFF);
     const surface = Color(0xFFFFFFFF);
