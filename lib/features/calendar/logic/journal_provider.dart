@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../data/models/event.dart';
 import '../data/models/reminder.dart';
 import '../data/repositories/journal_repository.dart';
-import 'notification_service.dart';
+import 'package:nafass_application/core/utils/notification_service.dart';
 import '../../auth/logic/auth_provider.dart';
 
 class JournalProvider extends ChangeNotifier {

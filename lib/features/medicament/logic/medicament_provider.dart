@@ -11,11 +11,17 @@ class MedicamentProvider extends ChangeNotifier {
   MedicamentProvider({required this.prisesProvider});
 
   List<Medicament> _medicaments = [];
-  List<Medicament> get medicaments =>
-      _medicaments.where((m) => m.archive == false).toList();
+  List<Medicament> get medicaments => _filteredMedicaments(false);
 
-  List<Medicament> get archivedMedicaments =>
-      _medicaments.where((m) => m.archive == true).toList();
+  List<Medicament> get archivedMedicaments => _filteredMedicaments(true);
+
+  List<Medicament> _filteredMedicaments(bool archived) {
+    final meds = _medicaments
+        .where((m) => m.archive == archived)
+        .toList()
+      ..sort((a, b) => a.debut.compareTo(b.debut));
+    return meds;
+  }
 
   Future<void> load() async {
     _medicaments = await _repo.loadMedicaments();

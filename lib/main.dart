@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nafass_application/features/calendar/logic/journal_provider.dart';
-import 'package:nafass_application/features/calendar/logic/notification_service.dart';
+import 'package:nafass_application/core/utils/notification_service.dart';
 import 'package:nafass_application/features/challenges/logic/challenges_provider.dart';
 import 'package:nafass_application/features/medicament/logic/medicament_provider.dart';
 import 'package:nafass_application/features/medicament/logic/prises_provider.dart';

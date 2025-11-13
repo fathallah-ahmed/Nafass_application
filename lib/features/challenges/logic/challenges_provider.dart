@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../auth/logic/auth_provider.dart';
 import '../../calendar/data/models/reminder.dart';
-import '../../calendar/logic/notification_service.dart';
+import 'package:nafass_application/core/utils/notification_service.dart';
 import '../data/models/challenge.dart';
 import '../data/models/challenge_progress.dart';
 import '../data/repositories/challenges_repository.dart';
