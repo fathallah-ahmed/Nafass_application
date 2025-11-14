@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../data/repositories/auth_repository.dart';
 import '../data/models/user_model.dart';
+import 'package:nafass_application/core/utils/mailing_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({AuthRepository? repository})
-      : _repository = repository ?? AuthRepository();
+  AuthProvider({
+    AuthRepository? repository,
+    MailingService? mailingService,
+  })  : _repository = repository ?? AuthRepository(),
+        _mailingService = mailingService ?? MailingService();
 
   final AuthRepository _repository;
+  final MailingService _mailingService;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -63,12 +68,28 @@ class AuthProvider extends ChangeNotifier {
     _setError(null);
 
     try {
-      await _repository.register(
+      final user = await _repository.register(
         username: username,
         lastName: lastName,
         email: email,
         password: password,
       );
+
+      // On le considère comme connecté après inscription
+      _currentUser = user;
+      notifyListeners();
+
+      // On envoie l'email de bienvenue via le backend Python
+      try {
+        await _mailingService.sendWelcomeEmail(
+          email: user.email,
+          firstName: user.username,
+          lastName: user.lastName,
+        );
+      } catch (error) {
+        debugPrint('Welcome email failed: $error');
+      }
+
       return true;
     } on AuthException catch (error) {
       _setError(error.message);
