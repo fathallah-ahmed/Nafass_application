@@ -1,6 +1,5 @@
 import '../../../../core/storage/local_json_store.dart';
 import '../../../user/data/models/user_profile_model.dart';
-
 class ProfileRepository {
   ProfileRepository({LocalJsonStore? store})
       : _store = store ?? LocalJsonStore();
@@ -10,7 +9,17 @@ class ProfileRepository {
 
   Future<List<UserProfileModel>> _readProfiles() async {
     final data = await _store.readList(_profileFile);
-    return data.map(UserProfileModel.fromJson).toList();
+    final profiles = data.map(UserProfileModel.fromJson).toList();
+    final Map<String, UserProfileModel> uniqueProfiles = {};
+
+    for (final profile in profiles) {
+      if (profile.id.isEmpty) {
+        continue;
+      }
+      uniqueProfiles[profile.id] = profile;
+    }
+
+    return uniqueProfiles.values.toList();
   }
 
   Future<void> _writeProfiles(List<UserProfileModel> profiles) async {
@@ -18,6 +27,10 @@ class ProfileRepository {
       _profileFile,
       profiles.map((profile) => profile.toJson()).toList(),
     );
+  }
+
+  Future<List<UserProfileModel>> getAllProfiles() async {
+    return _readProfiles();
   }
 
   Future<UserProfileModel?> getProfileByUserId(String userId) async {
@@ -39,6 +52,11 @@ class ProfileRepository {
     required String addictionType,
     String? profileImage,
     double? weight,
+    String? medicalCondition,
+    String? doctorName,
+    String? therapyGoals,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
   }) async {
     final profiles = await _readProfiles();
 
@@ -52,8 +70,19 @@ class ProfileRepository {
       addictionType: addictionType,
       profileImage: profileImage,
       weight: weight,
+      medicalCondition: medicalCondition,
+      doctorName: doctorName,
+      therapyGoals: therapyGoals,
+      emergencyContactName: emergencyContactName,
+      emergencyContactPhone: emergencyContactPhone,
     );
-    profiles.add(profile);
+
+    final existingIndex = profiles.indexWhere((existing) => existing.id == userId);
+    if (existingIndex != -1) {
+      profiles[existingIndex] = profile;
+    } else {
+      profiles.add(profile);
+    }
     await _writeProfiles(profiles);
     return profile;
   }

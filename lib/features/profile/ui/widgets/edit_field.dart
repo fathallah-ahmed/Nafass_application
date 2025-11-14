@@ -6,6 +6,10 @@ class EditField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscure;
   final String? Function(String?)? validator;
+  final int? maxLines;
+  final int? minLines;
+  final String? hintText;
+  final TextCapitalization textCapitalization;
 
   const EditField({
     super.key,
@@ -14,6 +18,10 @@ class EditField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscure = false,
     this.validator,
+    this.maxLines,
+    this.minLines,
+    this.hintText,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -24,8 +32,12 @@ class EditField extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscure,
+        maxLines: maxLines ?? 1,
+        minLines: maxLines != null ? (minLines ?? 1) : null,
+        textCapitalization: textCapitalization,
         decoration: InputDecoration(
           labelText: label,
+          hintText: hintText,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
           ),

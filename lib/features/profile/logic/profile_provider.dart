@@ -57,6 +57,11 @@ class ProfileProvider extends ChangeNotifier {
     required String addictionType,
     String? profileImage,
     double? weight,
+    String? medicalCondition,
+    String? doctorName,
+    String? therapyGoals,
+    String? emergencyContactName,
+    String? emergencyContactPhone,
   }) async {
     _setLoading(true);
     _setError(null);
@@ -71,6 +76,11 @@ class ProfileProvider extends ChangeNotifier {
         addictionType: addictionType,
         profileImage: profileImage,
         weight: weight,
+        medicalCondition: medicalCondition,
+        doctorName: doctorName,
+        therapyGoals: therapyGoals,
+        emergencyContactName: emergencyContactName,
+        emergencyContactPhone: emergencyContactPhone,
       );
       _currentProfile = profile;
       notifyListeners();

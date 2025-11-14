@@ -82,4 +82,29 @@ class AuthProvider extends ChangeNotifier {
     _currentUser = null;
     notifyListeners();
   }
+
+  Future<bool> deleteAccount() async {
+    final userId = _currentUser?.id;
+
+    if (userId == null) {
+      _setError('Aucun utilisateur à supprimer.');
+      return false;
+    }
+
+    _setLoading(true);
+    _setError(null);
+
+    try {
+      final deleted = await _repository.deleteUser(userId);
+      if (deleted) {
+        _currentUser = null;
+        notifyListeners();
+      } else {
+        _setError('Impossible de supprimer le compte utilisateur.');
+      }
+      return deleted;
+    } finally {
+      _setLoading(false);
+    }
+  }
 }

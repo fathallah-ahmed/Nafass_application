@@ -17,6 +17,11 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
   final _ageController = TextEditingController();
   final _emailController = TextEditingController();
   final _weightController = TextEditingController();
+  final _medicalConditionController = TextEditingController();
+  final _doctorNameController = TextEditingController();
+  final _therapyGoalsController = TextEditingController();
+  final _emergencyContactNameController = TextEditingController();
+  final _emergencyContactPhoneController = TextEditingController();
 
   String _selectedGender = 'Homme';
   String _selectedAddictionType = 'Tabac';
@@ -55,6 +60,11 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     _ageController.dispose();
     _emailController.dispose();
     _weightController.dispose();
+    _medicalConditionController.dispose();
+    _doctorNameController.dispose();
+    _therapyGoalsController.dispose();
+    _emergencyContactNameController.dispose();
+    _emergencyContactPhoneController.dispose();
     super.dispose();
   }
 
@@ -87,7 +97,26 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
       email: _emailController.text.trim(),
       addictionType: _selectedAddictionType,
       weight: _weightController.text.trim().isNotEmpty
-          ? double.tryParse(_weightController.text.trim())
+          ? double.tryParse(
+        _weightController.text.trim().replaceAll(',', '.'),
+      )
+          : null,
+      medicalCondition: _medicalConditionController.text.trim().isNotEmpty
+          ? _medicalConditionController.text.trim()
+          : null,
+      doctorName: _doctorNameController.text.trim().isNotEmpty
+          ? _doctorNameController.text.trim()
+          : null,
+      therapyGoals: _therapyGoalsController.text.trim().isNotEmpty
+          ? _therapyGoalsController.text.trim()
+          : null,
+      emergencyContactName:
+      _emergencyContactNameController.text.trim().isNotEmpty
+          ? _emergencyContactNameController.text.trim()
+          : null,
+      emergencyContactPhone:
+      _emergencyContactPhoneController.text.trim().isNotEmpty
+          ? _emergencyContactPhoneController.text.trim()
           : null,
     );
 
@@ -109,247 +138,360 @@ class _ProfileCreationPageState extends State<ProfileCreationPage> {
     }
   }
 
+  String? _validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final cleaned = value.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (cleaned.length < 6) {
+      return 'Numéro invalide';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF141518) : Colors.blueGrey.shade50,
+      backgroundColor:
+      isDark ? const Color(0xFF141518) : Colors.blueGrey.shade50,
       appBar: AppBar(
         title: const Text('Créer mon profil'),
-        backgroundColor: isDark
-            ? const Color(0xFF1E1F22)
-            : theme.colorScheme.primary,
+        backgroundColor:
+        isDark ? const Color(0xFF1E1F22) : theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Complétez votre profil',
-                style: theme.textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Ces informations nous aideront à mieux vous accompagner',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 32),
+        body: SafeArea(
+            child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final horizontalPadding =
+                  constraints.maxWidth > 700 ? 48.0 : 24.0;
+                  final maxFormWidth =
+                  constraints.maxWidth > 680 ? 560.0 : constraints.maxWidth;
 
-              TextFormField(
-                controller: _firstNameController,
-                decoration: InputDecoration(
-                  labelText: 'Prénom *',
-                  prefixIcon: const Icon(Icons.person),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                      vertical: 24,
+              ),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxFormWidth),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Complétez votre profil',
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Ces informations nous aideront à mieux vous accompagner',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              TextFormField(
+                                controller: _firstNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Prénom *',
+                                  prefixIcon: const Icon(Icons.person),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Le prénom est requis';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _lastNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Nom *',
+                                  prefixIcon: const Icon(Icons.person_outline),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Le nom est requis';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _emailController,
+                                decoration: InputDecoration(
+                                  labelText: 'Email *',
+                                  prefixIcon: const Icon(Icons.email),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'L\'email est requis';
+                                  }
+                                  if (!value.contains('@') || !value.contains('.')) {
+                                    return 'Email invalide';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _ageController,
+                                decoration: InputDecoration(
+                                  labelText: 'Âge *',
+                                  prefixIcon: const Icon(Icons.cake),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                keyboardType: TextInputType.number,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'L\'âge est requis';
+                                  }
+                                  final age = int.tryParse(value.trim());
+                                  if (age == null) {
+                                    return 'Âge invalide';
+                                  }
+                                  if (age < 1 || age > 120) {
+                                    return 'L\'âge doit être entre 1 et 120';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              DropdownButtonFormField<String>(
+                                value: _selectedGender,
+                                decoration: InputDecoration(
+                                  labelText: 'Genre *',
+                                  prefixIcon: const Icon(Icons.wc),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: ['Homme', 'Femme', 'Autre'].map((gender) {
+                                  return DropdownMenuItem(
+                                    value: gender,
+                                    child: Text(gender),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() => _selectedGender = value);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              DropdownButtonFormField<String>(
+                                value: _selectedAddictionType,
+                                decoration: InputDecoration(
+                                  labelText: 'Type d\'addiction *',
+                                  prefixIcon: const Icon(Icons.medical_services),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: ['Tabac', 'Alcool', 'Drogue', 'Autre']
+                                    .map((type) {
+                                  return DropdownMenuItem(
+                                    value: type,
+                                    child: Text(type),
+                                  );
+                                }).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() => _selectedAddictionType = value);
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _weightController,
+                                decoration: InputDecoration(
+                                  labelText: 'Poids (kg)',
+                                  prefixIcon: const Icon(Icons.monitor_weight),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                  helperStyle:
+                                  TextStyle(color: Colors.grey.shade600),
+                                ),
+                                keyboardType:
+                                const TextInputType.numberWithOptions(decimal: true),
+                                validator: (value) {
+                                  if (value != null && value.trim().isNotEmpty) {
+                                    final weight = double.tryParse(value.trim());
+                                    if (weight == null) {
+                                      return 'Poids invalide';
+                                    }
+                                    if (weight < 1 || weight > 500) {
+                                      return 'Le poids doit être entre 1 et 500 kg';
+                                    }
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Informations de santé',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _medicalConditionController,
+                                decoration: InputDecoration(
+                                  labelText: 'Condition médicale',
+                                  prefixIcon:
+                                  const Icon(Icons.monitor_heart_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                ),
+                                maxLines: 3,
+                                textCapitalization: TextCapitalization.sentences,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _doctorNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Professionnel référent',
+                                  prefixIcon: const Icon(Icons.medical_information),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _therapyGoalsController,
+                                decoration: InputDecoration(
+                                  labelText: 'Objectifs thérapeutiques',
+                                  prefixIcon: const Icon(Icons.flag_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                ),
+                                maxLines: 3,
+                                textCapitalization: TextCapitalization.sentences,
+                              ),
+                              const SizedBox(height: 24),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Contact d\'urgence',
+                                  style: theme.textTheme.titleMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _emergencyContactNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Nom du contact',
+                                  prefixIcon: const Icon(Icons.contact_page_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                ),
+                                textCapitalization: TextCapitalization.words,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _emergencyContactPhoneController,
+                                decoration: InputDecoration(
+                                  labelText: 'Téléphone du contact',
+                                  prefixIcon: const Icon(Icons.phone_in_talk_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  helperText: 'Optionnel',
+                                ),
+                                keyboardType: TextInputType.phone,
+                                validator: _validatePhone,
+                              ),
+                              const SizedBox(height: 8),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: Text(
+                                  '* Champs obligatoires',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: Colors.grey.shade600,
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              Consumer<ProfileProvider>(
+                                builder: (context, provider, _) {
+                                  return ElevatedButton(
+                                    onPressed:
+                                    provider.isLoading ? null : _createProfile,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: theme.colorScheme.primary,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor: Colors.grey.shade400,
+                                      padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: provider.isLoading
+                                        ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                        : const Text(
+                                      'Créer mon profil',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                   ),
                 ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le prénom est requis';
-                  }
-                  return null;
-                },
               ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _lastNameController,
-                decoration: InputDecoration(
-                  labelText: 'Nom *',
-                  prefixIcon: const Icon(Icons.person_outline),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le nom est requis';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email *',
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'L\'email est requis';
-                  }
-                  if (!value.contains('@') || !value.contains('.')) {
-                    return 'Email invalide';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _ageController,
-                decoration: InputDecoration(
-                  labelText: 'Âge *',
-                  prefixIcon: const Icon(Icons.cake),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'L\'âge est requis';
-                  }
-                  final age = int.tryParse(value.trim());
-                  if (age == null) {
-                    return 'Âge invalide';
-                  }
-                  if (age < 1 || age > 120) {
-                    return 'L\'âge doit être entre 1 et 120';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                decoration: InputDecoration(
-                  labelText: 'Genre *',
-                  prefixIcon: const Icon(Icons.wc),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: ['Homme', 'Femme', 'Autre'].map((gender) {
-                  return DropdownMenuItem(
-                    value: gender,
-                    child: Text(gender),
                   );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedGender = value);
-                  }
                 },
-              ),
-              const SizedBox(height: 16),
-
-              DropdownButtonFormField<String>(
-                value: _selectedAddictionType,
-                decoration: InputDecoration(
-                  labelText: 'Type d\'addiction *',
-                  prefixIcon: const Icon(Icons.medical_services),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                items: ['Tabac', 'Alcool', 'Drogue', 'Autre'].map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedAddictionType = value);
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-
-              TextFormField(
-                controller: _weightController,
-                decoration: InputDecoration(
-                  labelText: 'Poids (kg)',
-                  prefixIcon: const Icon(Icons.monitor_weight),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  helperText: 'Optionnel',
-                  helperStyle: TextStyle(color: Colors.grey.shade600),
-                ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value != null && value.trim().isNotEmpty) {
-                    final weight = double.tryParse(value.trim());
-                    if (weight == null) {
-                      return 'Poids invalide';
-                    }
-                    if (weight < 1 || weight > 500) {
-                      return 'Le poids doit être entre 1 et 500 kg';
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 8),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  '* Champs obligatoires',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey.shade600,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              Consumer<ProfileProvider>(
-                builder: (context, provider, _) {
-                  return ElevatedButton(
-                    onPressed: provider.isLoading ? null : _createProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: Colors.grey.shade400,
-                      padding: const EdgeInsets.all(16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: provider.isLoading
-                        ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : const Text(
-                      'Créer mon profil',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
         ),
       ),
     );

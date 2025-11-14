@@ -208,179 +208,197 @@ class _MedicamentCard extends StatelessWidget {
         ? 0
         : (taken / totalPrises).clamp(0.0, 1.0);
 
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return LayoutBuilder(
+        builder: (context, constraints) {
+          final iconPadding = constraints.maxWidth < 360 ? 10.0 : 12.0;
+          final iconSize = constraints.maxWidth < 360 ? 24.0 : 28.0;
+
+          return Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(16),
+                Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(iconPadding),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.medication_rounded,
+                      color: colorScheme.primary,
+                      size: iconSize,
+                    ),
                   ),
-                  child: Icon(
-                    Icons.medication_rounded,
-                    color: colorScheme.primary,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                  const SizedBox(width: 16),
+                  Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              medicament.nom,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
+                        Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      Expanded(
+                      child: Text(
+                      medicament.nom,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                               ),
-                            ),
-                          ),
-                          if (medicament.archive)
-                            const Padding(
-                              padding: EdgeInsets.only(left: 8.0),
-                              child: Chip(
-                                label: Text('Archivé'),
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            ),
-                          PopupMenuButton<String>(
-                            onSelected: (value) {
-                              switch (value) {
-                                case 'details':
-                                  onOpenDetails();
-                                  break;
-                                case 'edit':
-                                  if (onEdit != null) onEdit!();
-                                  break;
-                                case 'archive':
-                                  if (onArchive != null) onArchive!();
-                                  break;
-                                case 'delete':
-                                  onDelete();
-                                  break;
-                              }
-                            },
-                            itemBuilder: (context) {
-                              final items = <PopupMenuEntry<String>>[
-                                const PopupMenuItem(
-                                  value: 'details',
-                                  child: Text('Voir les détails'),
-                                ),
-                              ];
-                              if (onEdit != null) {
-                                items.add(
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Text('Modifier'),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            fit: FlexFit.loose,
+                            child: Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              alignment: WrapAlignment.end,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                if (medicament.archive)
+                                  const Chip(
+                                    label: Text('Archivé'),
+                                    visualDensity: VisualDensity.compact,
                                   ),
-                                );
-                              }
-                              if (onArchive != null) {
-                                items.add(
-                                  const PopupMenuItem(
-                                    value: 'archive',
-                                    child: Text('Archiver'),
-                                  ),
-                                );
-                              }
-                              items.add(
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Supprimer'),
+                                PopupMenuButton<String>(
+                                  onSelected: (value) {
+                                    switch (value) {
+                                      case 'details':
+                                        onOpenDetails();
+                                        break;
+                                      case 'edit':
+                                        if (onEdit != null) onEdit!();
+                                        break;
+                                      case 'archive':
+                                        if (onArchive != null) onArchive!();
+                                        break;
+                                      case 'delete':
+                                        onDelete();
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder: (context) {
+                                    final items = <PopupMenuEntry<String>>[
+                                      const PopupMenuItem(
+                                        value: 'details',
+                                        child: Text('Voir les détails'),
+                                      ),
+                                    ];
+                                    if (onEdit != null) {
+                                      items.add(
+                                        const PopupMenuItem(
+                                          value: 'edit',
+                                          child: Text('Modifier'),
+                                        ),
+                                      );
+                                    }
+                                    if (onArchive != null) {
+                                      items.add(
+                                        const PopupMenuItem(
+                                          value: 'archive',
+                                          child: Text('Archiver'),
+                                        ),
+                                      );
+                                    }
+                                    items.add(
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Text('Supprimer'),
+                                      ),
+                                    );
+                                    return items;
+                                  },
                                 ),
-                              );
-                              return items;
-                            },
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                      if (medicament.dosage.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            medicament.dosage,
-                            style: theme.textTheme.bodyMedium
-                                ?.copyWith(color: colorScheme.primary),
                           ),
-                        ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Du ${_formatDate(medicament.debut)} au ${_formatDate(medicament.fin)}',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      if (nextIntake != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'Prochaine prise : ${_formatDateTime(nextIntake!.dateHeurePrevue)}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.tertiary,
-                            fontWeight: FontWeight.w600,
+                          if (medicament.dosage.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                medicament.dosage,
+                                style: theme.textTheme.bodyMedium
+                                    ?.copyWith(color: colorScheme.primary),
+                              ),
+                            ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Du ${_formatDate(medicament.debut)} au ${_formatDate(medicament.fin)}',
+                            style: theme.textTheme.bodySmall,
                           ),
-                        ),
-                      ],
-                    ],
+                          if (nextIntake != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Prochaine prise : ${_formatDateTime(nextIntake!.dateHeurePrevue)}',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.tertiary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final heure in medicament.heures)
+                    Chip(
+                      label: Text(heure),
+                      avatar: const Icon(Icons.schedule, size: 18),
+                      ),
+                ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final heure in medicament.heures)
-                  Chip(
-                    label: Text(heure),
-                    avatar: const Icon(Icons.schedule, size: 18),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            MedicamentStatsRow(
-              taken: taken,
-              missed: missed,
-              postponed: postponed,
-              planned: planned,
-            ),
-            const SizedBox(height: 12),
-            LinearProgressIndicator(
-              value: progress,
-              backgroundColor: colorScheme.surfaceVariant,
-              minHeight: 6,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: onOpenDetails,
-                  icon: const Icon(Icons.visibility_rounded),
-                  label: const Text('Détails'),
+                const SizedBox(height: 16),
+                MedicamentStatsRow(
+                  taken: taken,
+                  missed: missed,
+                  postponed: postponed,
+                  planned: planned,
                 ),
-                if (onEdit != null)
-                  const SizedBox(width: 12),
-                if (onEdit != null)
-                  FilledButton.icon(
-                    onPressed: onEdit,
-                    icon: const Icon(Icons.edit_rounded),
-                    label: const Text('Modifier'),
-                  ),
+                const SizedBox(height: 12),
+                LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: colorScheme.surfaceVariant,
+                  minHeight: 6,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton.icon(
+                      onPressed: onOpenDetails,
+                      icon: const Icon(Icons.visibility_rounded),
+                      label: const Text('Détails'),
+                    ),
+                    if (onEdit != null)
+                      const SizedBox(width: 12),
+                    if (onEdit != null)
+                      FilledButton.icon(
+                        onPressed: onEdit,
+                        icon: const Icon(Icons.edit_rounded),
+                        label: const Text('Modifier'),
+                      ),
+                  ],
+                ),
+
               ],
             ),
-          ],
-        ),
-      ),
+            ),
+          );
+        },
     );
   }
 
