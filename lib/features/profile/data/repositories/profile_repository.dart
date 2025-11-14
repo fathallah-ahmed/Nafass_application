@@ -20,6 +20,10 @@ class ProfileRepository {
     );
   }
 
+  Future<List<UserProfileModel>> getAllProfiles() async {
+    return _readProfiles();
+  }
+
   Future<UserProfileModel?> getProfileByUserId(String userId) async {
     final profiles = await _readProfiles();
     try {
@@ -53,7 +57,12 @@ class ProfileRepository {
       profileImage: profileImage,
       weight: weight,
     );
-    profiles.add(profile);
+    final existingIndex = profiles.indexWhere((existing) => existing.id == userId);
+    if (existingIndex != -1) {
+      profiles[existingIndex] = profile;
+    } else {
+      profiles.add(profile);
+    }
     await _writeProfiles(profiles);
     return profile;
   }

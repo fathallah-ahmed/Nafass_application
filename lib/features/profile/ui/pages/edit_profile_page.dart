@@ -127,76 +127,97 @@ class _EditProfilePageState extends State<EditProfilePage> {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              EditField(
-                label: 'Prénom',
-                controller: _firstNameCtrl,
-                validator: (v) => _validateRequired(v, 'Le prénom'),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final horizontalPadding =
+                constraints.maxWidth > 700 ? 48.0 : 16.0;
+            final maxFormWidth =
+                constraints.maxWidth > 640 ? 520.0 : constraints.maxWidth;
+
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 24,
               ),
-              EditField(
-                label: 'Nom',
-                controller: _lastNameCtrl,
-                validator: (v) => _validateRequired(v, 'Le nom'),
-              ),
-              EditField(
-                label: 'Email',
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) => _validateRequired(v, 'L\'email'),
-              ),
-              EditField(
-                label: 'Âge',
-                controller: _ageCtrl,
-                keyboardType: TextInputType.number,
-                validator: _validateAge,
-              ),
-              EditField(
-                label: 'Genre',
-                controller: _genderCtrl,
-                validator: (v) => _validateRequired(v, 'Le genre'),
-              ),
-              EditField(
-                label: 'Type d\'addiction',
-                controller: _addictionTypeCtrl,
-                validator: (v) => _validateRequired(v, 'Le type d\'addiction'),
-              ),
-              EditField(
-                label: 'Poids (kg)',
-                controller: _weightCtrl,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: maxFormWidth),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        EditField(
+                          label: 'Prénom',
+                          controller: _firstNameCtrl,
+                          validator: (v) => _validateRequired(v, 'Le prénom'),
+                        ),
+                        EditField(
+                          label: 'Nom',
+                          controller: _lastNameCtrl,
+                          validator: (v) => _validateRequired(v, 'Le nom'),
+                        ),
+                        EditField(
+                          label: 'Email',
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (v) => _validateRequired(v, 'L\'email'),
+                        ),
+                        EditField(
+                          label: 'Âge',
+                          controller: _ageCtrl,
+                          keyboardType: TextInputType.number,
+                          validator: _validateAge,
+                        ),
+                        EditField(
+                          label: 'Genre',
+                          controller: _genderCtrl,
+                          validator: (v) => _validateRequired(v, 'Le genre'),
+                        ),
+                        EditField(
+                          label: 'Type d\'addiction',
+                          controller: _addictionTypeCtrl,
+                          validator: (v) =>
+                              _validateRequired(v, 'Le type d\'addiction'),
+                        ),
+                        EditField(
+                          label: 'Poids (kg)',
+                          controller: _weightCtrl,
+                          keyboardType: TextInputType.number,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _save,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Enregistrer',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                      : const Text(
-                    'Enregistrer',
-                    style: TextStyle(fontSize: 16),
                   ),
                 ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

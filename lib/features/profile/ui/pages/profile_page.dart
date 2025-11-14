@@ -59,13 +59,28 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (confirm == true && mounted) {
-      final success = await profileProvider.deleteProfile(userId);
-      if (success && mounted) {
-        authProvider.logout();
+      final profileDeleted = await profileProvider.deleteProfile(userId);
+      final accountDeleted = await authProvider.deleteAccount();
+
+      if (!mounted) return;
+
+      if ((profileDeleted || profileProvider.currentProfile == null) &&
+          accountDeleted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Compte supprimé avec succès")),
         );
-        Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
+      } else {
+        final errorMessage =
+            profileProvider.errorMessage ??
+            authProvider.errorMessage ??
+            "Une erreur est survenue lors de la suppression du compte.";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -76,16 +91,17 @@ class _ProfilePageState extends State<ProfilePage> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF141518) : Colors.blueGrey.shade50,
+      backgroundColor:
+          isDark ? const Color(0xFF141518) : Colors.blueGrey.shade50,
       appBar: AppBar(
         title: const Text("Mon Profil"),
-        backgroundColor: isDark
-            ? const Color(0xFF1E1F22)
-            : theme.colorScheme.primary,
+        backgroundColor:
+            isDark ? const Color(0xFF1E1F22) : theme.colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: Consumer<ProfileProvider>(
-        builder: (context, profileProvider, _) {
+      body: SafeArea(
+        child: Consumer<ProfileProvider>(
+          builder: (context, profileProvider, _) {
           if (profileProvider.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -192,61 +208,74 @@ class _ProfilePageState extends State<ProfilePage> {
 
           return RefreshIndicator(
             onRefresh: _loadProfile,
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ProfileHeader(profile: profile),
-                  ProfileInfoCard(profile: profile),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.edit),
-                      label: const Text("Modifier mon profil"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final horizontalPadding =
+                    constraints.maxWidth > 700 ? 32.0 : 16.0;
+                final maxContentWidth =
+                    constraints.maxWidth > 760 ? 720.0 : constraints.maxWidth;
+
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: horizontalPadding,
+                    vertical: 24,
+                  ),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: maxContentWidth),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ProfileHeader(profile: profile),
+                          const SizedBox(height: 16),
+                          ProfileInfoCard(profile: profile),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.edit),
+                            label: const Text("Modifier mon profil"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () async {
+                              final result = await Navigator.pushNamed(
+                                context,
+                                '/profile/edit',
+                                arguments: profile,
+                              );
+                              if (result == true && mounted) {
+                                await _loadProfile();
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.delete_forever),
+                            label: const Text("Supprimer mon compte"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red.shade600,
+                              foregroundColor: Colors.white,
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: _handleDeleteAccount,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
-                      onPressed: () async {
-                        final result = await Navigator.pushNamed(
-                          context,
-                          '/profile/edit',
-                          arguments: profile,
-                        );
-                        if (result == true && mounted) {
-                          await _loadProfile();
-                        }
-                      },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.delete_forever),
-                      label: const Text("Supprimer mon compte"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.all(12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: _handleDeleteAccount,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                );
+              },
             ),
           );
         },

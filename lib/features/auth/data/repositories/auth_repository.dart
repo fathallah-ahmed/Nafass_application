@@ -74,4 +74,16 @@ class AuthRepository {
     await _writeUsers(<UserModel>[...users, user]);
     return user;
   }
+
+  Future<bool> deleteUser(String userId) async {
+    final users = await _readUsers();
+    final updatedUsers = users.where((user) => user.id != userId).toList();
+
+    if (updatedUsers.length == users.length) {
+      return false;
+    }
+
+    await _writeUsers(updatedUsers);
+    return true;
+  }
 }
