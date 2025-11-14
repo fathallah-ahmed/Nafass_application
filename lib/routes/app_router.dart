@@ -7,6 +7,8 @@ import 'package:nafass_application/features/home/ui/pages/home_page.dart';
 import '../features/auth/ui/pages/login_page.dart';
 import '../features/auth/ui/pages/register_page.dart';
 import 'package:nafass_application/features/medicament/ui/pages/medicament_list_page.dart';
+import '../features/consumption/ui/pages/consumption_home_page.dart';
+import '../features/consumption/ui/pages/consumption_stats_page.dart';
 import '../features/profile/ui/pages/edit_profile_page.dart';
 import '../features/profile/ui/pages/profile_creation_page.dart';
 import '../features/profile/ui/pages/profile_page.dart';
@@ -26,5 +28,7 @@ class AppRouter {
     '/profile': (context) => const ProfilePage(),
     '/create-profile': (context) => const ProfileCreationPage(),
     '/profile/edit': (context) => const EditProfilePage(),
+    '/consumption': (context) => const ConsumptionHomePage(),
+    '/consumption/stats': (context) => const  ConsumptionStatsPage(),
   };
 }
